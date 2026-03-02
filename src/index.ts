@@ -1,8 +1,7 @@
 import { config } from "dotenv";
 import { join } from "path";
-import { syncPlatforms } from "./sync/platforms";
-
 config({ path: join(__dirname, "../.env"), quiet: true });
+import { syncPlatforms } from "./sync/platforms";
 
 async function main(): Promise<void> {
   await syncPlatforms();
