@@ -2,8 +2,9 @@
   "name": "ra-indexer",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.ts",
   "scripts": {
+    "start": "npx ts-node src/index.ts"
   },
   "repository": {
     "type": "git",
@@ -16,5 +17,16 @@
   "bugs": {
     "url": "https://github.com/danielrajmon/ra-indexer/issues"
   },
-  "homepage": "https://github.com/danielrajmon/ra-indexer#readme"
+  "homepage": "https://github.com/danielrajmon/ra-indexer#readme",
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "@types/pg": "^8.18.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@retroachievements/api": "^2.10.0",
+    "dotenv": "^17.3.1",
+    "pg": "^8.19.0"
+  }
 }
