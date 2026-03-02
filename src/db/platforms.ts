@@ -1,12 +1,8 @@
+import { Platform } from "../types/platforms";
 import { query, queryOne } from "./client";
 
-type PlatformRecord = {
-  id: number;
-  name: string;
-};
-
-export async function getPlatformById(platformId: number): Promise<PlatformRecord | null> {
-  return queryOne<PlatformRecord>(`
+export async function getPlatformById(platformId: number): Promise<Platform | null> {
+  return queryOne<Platform>(`
     SELECT platform_id AS id,
            platform_name AS name
       FROM platforms
@@ -14,3 +10,21 @@ export async function getPlatformById(platformId: number): Promise<PlatformRecor
   `, [platformId]);
 }
 
+export async function insertPlatform(platform: Platform): Promise<void> {
+  await query(`
+    INSERT INTO platforms
+      (platform_id, platform_name, is_active, updated_at)
+    VALUES
+      ($1, $2, $3,NOW())
+  `, [platform.id, platform.name, platform.active]);
+}
+
+export async function updatePlatform(platform: Platform): Promise<void> {
+  await query(`
+    UPDATE platforms
+       SET platform_name = $2,
+           is_active = $3,
+           updated_at = NOW()
+     WHERE platform_id = $1
+  `, [platform.id, platform.name, platform.active]);
+}
