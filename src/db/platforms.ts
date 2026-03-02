@@ -1,6 +1,17 @@
 import { Platform } from "../types/platforms";
 import { query, queryOne } from "./client";
 
+export async function getPlatforms(): Promise<Platform[]> {
+  return query<Platform>(`
+    SELECT platform_id AS id,
+           platform_name AS name,
+           is_active AS active
+      FROM platforms p
+      ORDER BY p.platform_id ASC
+    `,
+  );
+}
+
 export async function getPlatformById(platformId: number): Promise<Platform | null> {
   return queryOne<Platform>(`
     SELECT platform_id AS id,
