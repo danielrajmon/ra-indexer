@@ -63,7 +63,6 @@ async function upsertGame(platformId: number, game: Game): Promise<void> {
     console.log(`Adding game ${game.title} to platform ID ${platformId}.`);
     await withTransaction(async (txQuery) => {
       await insertGame(platformId, game, txQuery);
-      console.log(JSON.stringify(files));
       await insertGameFiles(platformId, game.id, files, txQuery);
     });
 
@@ -112,7 +111,7 @@ export async function processGames(): Promise<void> {
 
     for (const game of gameList) {
       if (shouldSkipInsertForTitle(game.title)) {
-        console.log(`Skipping game ${game.title} (ID: ${game.id}) early due to title filter.`);
+        // console.log(`Skipping game ${game.title} (ID: ${game.id}) early due to title filter.`);
         continue;
       }
 
