@@ -1,6 +1,7 @@
 import { getPlatforms } from "../db/platforms";
 import { getGameById, insertGame, updateGame } from "../db/games";
 import { getGameFiles, insertGameFiles, replaceGameFiles } from "../db/files";
+import { withTransaction } from "../db/client";
 import { getGameListForPlatform } from "../api/gamelists";
 import { Game } from "../types/game";
 import { getFilesForGame } from "../api/files";
@@ -60,9 +61,11 @@ async function upsertGame(platformId: number, game: Game): Promise<void> {
     const files = await getFilesForGame(game.id);
 
     console.log(`Adding game ${game.title} to platform ID ${platformId}.`);
-    await insertGame(platformId, game);
-    console.log(JSON.stringify(files));
-    await insertGameFiles(platformId, game.id, files);
+    await withTransaction(async (txQuery) => {
+      await insertGame(platformId, game, txQuery);
+      console.log(JSON.stringify(files));
+      await insertGameFiles(platformId, game.id, files, txQuery);
+    });
 
     return;
   }
@@ -93,8 +96,10 @@ async function upsertGame(platformId: number, game: Game): Promise<void> {
     const files = await getFilesForGame(game.id);
 
     console.log(`Game ${game.title} (ID: ${game.id}) hash list changed. Refreshing files.`);
-    await updateGame(platformId, game);
-    await replaceGameFiles(platformId, game.id, files);
+    await withTransaction(async (txQuery) => {
+      await updateGame(platformId, game, txQuery);
+      await replaceGameFiles(platformId, game.id, files, txQuery);
+    });
   }
 
 }

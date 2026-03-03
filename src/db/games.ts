@@ -1,4 +1,4 @@
-import { query, queryOne } from "./client";
+import { query, queryOne, QueryExecutor } from "./client";
 import { Game } from "../types/game";
 
 export async function getGameById(gameId: number): Promise<Game | null> {
@@ -18,8 +18,8 @@ export async function getGameById(gameId: number): Promise<Game | null> {
   };
 }
 
-export async function insertGame(platformId: number, game: Game): Promise<void> {
-  await query(`
+export async function insertGame(platformId: number, game: Game, executeQuery: QueryExecutor = query): Promise<void> {
+  await executeQuery(`
     INSERT INTO games
       (id, platform_id, title, num_achievements, num_leaderboards, points, updated_at)
     VALUES
@@ -28,8 +28,8 @@ export async function insertGame(platformId: number, game: Game): Promise<void> 
 }
 
 
-export async function updateGame(platformId: number, game: Game): Promise<void> {
-  await query(`
+export async function updateGame(platformId: number, game: Game, executeQuery: QueryExecutor = query): Promise<void> {
+  await executeQuery(`
     UPDATE games
        SET title = $2,
            num_achievements = $3,
