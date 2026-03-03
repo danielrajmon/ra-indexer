@@ -14,7 +14,7 @@ export async function processPlatforms(): Promise<void> {
         id: platform.id,
         name: platform.name
       });
-      return;
+      continue;
     }
   }
 }
