@@ -14,6 +14,7 @@ export async function getGameById(gameId: number): Promise<Game | null> {
     ...result,
     numAchievements: result.num_achievements,
     numLeaderboards: result.num_leaderboards,
+    updatedAt: result.updated_at,
   };
 }
 

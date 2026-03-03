@@ -16,6 +16,7 @@ const SKIPPED_GAME_TITLE_PREFIXES = [
 ];
 
 const SKIPPED_GAME_TITLE_CONTAINS = ["[Subset"];
+const UPSERT_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
 function haveDifferentHashes(existingHashes: string[], incomingHashes: string[]): boolean {
   if (existingHashes.length !== incomingHashes.length) {
@@ -29,6 +30,20 @@ function haveDifferentHashes(existingHashes: string[], incomingHashes: string[])
 function shouldSkipInsertForTitle(title: string): boolean {
   return SKIPPED_GAME_TITLE_PREFIXES.some((prefix) => title.startsWith(prefix)) ||
     SKIPPED_GAME_TITLE_CONTAINS.some((token) => title.includes(token));
+}
+
+function wasUpdatedInLast24Hours(updatedAt?: string | Date): boolean {
+  if (!updatedAt) {
+    return false;
+  }
+
+  const updatedTimestamp = new Date(updatedAt).getTime();
+
+  if (Number.isNaN(updatedTimestamp)) {
+    return false;
+  }
+
+  return (Date.now() - updatedTimestamp) < UPSERT_COOLDOWN_MS;
 }
 
 async function upsertGame(platformId: number, game: Game): Promise<void> {
@@ -46,6 +61,11 @@ async function upsertGame(platformId: number, game: Game): Promise<void> {
     await insertGame(platformId, game);
     await insertGameFiles(platformId, game.id, files);
 
+    return;
+  }
+
+  if (wasUpdatedInLast24Hours(existingGame.updatedAt)) {
+    console.log(`Skipping upsert for game ${game.title} (ID: ${game.id}) because it was updated within the last 24 hours.`);
     return;
   }
 

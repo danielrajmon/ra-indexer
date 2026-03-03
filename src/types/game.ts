@@ -5,4 +5,5 @@ export type Game = {
   numLeaderboards: number;
   points: number;
   hashes?: string[];
+  updatedAt?: string | Date;
 };
