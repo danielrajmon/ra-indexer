@@ -5,6 +5,18 @@ import { getGameListForPlatform } from "../api/gamelists";
 import { Game } from "../types/game";
 import { getFilesForGame } from "../api/files";
 
+const SKIPPED_GAME_TITLE_PREFIXES = [
+  "~Demo~",
+  "~Hack~",
+  "~Homebrew~",
+  "~Prototype~",
+  "~Test Kit~",
+  "~Unlicensed~",
+  "~Z~"
+];
+
+const SKIPPED_GAME_TITLE_CONTAINS = ["[Subset"];
+
 function haveDifferentHashes(existingHashes: string[], incomingHashes: string[]): boolean {
   if (existingHashes.length !== incomingHashes.length) {
     return true;
@@ -14,10 +26,20 @@ function haveDifferentHashes(existingHashes: string[], incomingHashes: string[])
   return incomingHashes.some((hash) => !existingSet.has(hash));
 }
 
+function shouldSkipInsertForTitle(title: string): boolean {
+  return SKIPPED_GAME_TITLE_PREFIXES.some((prefix) => title.startsWith(prefix)) ||
+    SKIPPED_GAME_TITLE_CONTAINS.some((token) => title.includes(token));
+}
+
 async function upsertGame(platformId: number, game: Game): Promise<void> {
   const existingGame = await getGameById(game.id);
 
   if (!existingGame) {
+    if (shouldSkipInsertForTitle(game.title)) {
+      console.log(`Skipping insert for game ${game.title} (ID: ${game.id}) due to title filter.`);
+      return;
+    }
+
     const files = await getFilesForGame(game.id);
 
     console.log(`Adding game ${game.title} to platform ID ${platformId}.`);
@@ -61,6 +83,11 @@ export async function processGames(): Promise<void> {
     const gameList = await getGameListForPlatform(platform.id);
 
     for (const game of gameList) {
+      if (shouldSkipInsertForTitle(game.title)) {
+        console.log(`Skipping game ${game.title} (ID: ${game.id}) early due to title filter.`);
+        continue;
+      }
+
       await upsertGame(platform.id, game);
     }
   }
