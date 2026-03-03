@@ -51,7 +51,7 @@ async function upsertGame(platformId: number, game: Game): Promise<void> {
 
   if (!existingGame) {
     if (shouldSkipInsertForTitle(game.title)) {
-      console.log(`Skipping insert for game ${game.title} (ID: ${game.id}) due to title filter.`);
+      // console.log(`Skipping insert for game ${game.title} (ID: ${game.id}) due to title filter.`);
       return;
     }
 
@@ -65,7 +65,7 @@ async function upsertGame(platformId: number, game: Game): Promise<void> {
   }
 
   if (wasUpdatedInLast24Hours(existingGame.updatedAt)) {
-    console.log(`Skipping upsert for game ${game.title} (ID: ${game.id}) because it was updated within the last 24 hours.`);
+    // console.log(`Skipping upsert for game ${game.title} (ID: ${game.id}) because it was updated within the last 24 hours.`);
     return;
   }
 
