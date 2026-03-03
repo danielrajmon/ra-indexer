@@ -7,12 +7,14 @@ export async function getGameFiles(gameId: number): Promise<File[] | null> {
 
 export async function insertGameFiles(platformId: number, gameId: number, files: File[]): Promise<void> {
   for (const file of files) {
+    const normalizedMd5 = file.md5.toLowerCase();
+
     await query(`
       INSERT INTO files
         (platform_id, game_id, name, md5, patch_url, labels)
       VALUES
         ($1, $2, $3, $4, $5, $6)
-    `, [platformId, gameId, file.name, file.md5, file.patchUrl, file.labels ?? []]);
+    `, [platformId, gameId, file.name, normalizedMd5, file.patchUrl, file.labels ?? []]);
   }
 }
 

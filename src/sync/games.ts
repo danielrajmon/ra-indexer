@@ -19,12 +19,14 @@ const SKIPPED_GAME_TITLE_CONTAINS = ["[Subset"];
 const UPSERT_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
 function haveDifferentHashes(existingHashes: string[], incomingHashes: string[]): boolean {
-  if (existingHashes.length !== incomingHashes.length) {
+  const normalizedIncomingHashes = incomingHashes.map((hash) => hash.toLowerCase());
+
+  if (existingHashes.length !== normalizedIncomingHashes.length) {
     return true;
   }
 
   const existingSet = new Set(existingHashes);
-  return incomingHashes.some((hash) => !existingSet.has(hash));
+  return normalizedIncomingHashes.some((hash) => !existingSet.has(hash));
 }
 
 function shouldSkipInsertForTitle(title: string): boolean {
@@ -59,6 +61,7 @@ async function upsertGame(platformId: number, game: Game): Promise<void> {
 
     console.log(`Adding game ${game.title} to platform ID ${platformId}.`);
     await insertGame(platformId, game);
+    console.log(JSON.stringify(files));
     await insertGameFiles(platformId, game.id, files);
 
     return;
