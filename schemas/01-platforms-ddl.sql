@@ -1,7 +1,6 @@
 CREATE TABLE IF NOT EXISTS platforms (
-  platform_id INTEGER PRIMARY KEY,
-  platform_name VARCHAR(255) NOT NULL UNIQUE,
-  is_active BOOLEAN NOT NULL DEFAULT FALSE,
+  id INTEGER PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -22,4 +21,4 @@ FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
 
-CREATE INDEX IF NOT EXISTS idx_platforms_platform ON platforms(platform_id);
+CREATE INDEX IF NOT EXISTS idx_platforms_platform ON platforms(id);

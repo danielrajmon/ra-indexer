@@ -1,17 +1,17 @@
 CREATE TABLE IF NOT EXISTS files (
-  platform_id INTEGER NOT NULL,
-  game_id INTEGER NOT NULL,
-  file_name VARCHAR(512),
+  platform_id INTEGER NOT NULL REFERENCES platforms(id) ON DELETE CASCADE,
+  game_id INTEGER NOT NULL REFERENCES games(id) ON DELETE CASCADE,
+  name VARCHAR(512),
   md5 VARCHAR(32) NOT NULL CHECK (md5 ~ '^[0-9a-f]{32}$'),
   is_required BOOLEAN DEFAULT NULL,
   is_owned BOOLEAN NOT NULL DEFAULT FALSE,
   patch_url TEXT,
   labels TEXT[],
-  original_name VARCHAR(512),
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (platform_id, game_id, md5),
-  FOREIGN KEY (platform_id, game_id) REFERENCES games(platform_id, game_id) ON DELETE CASCADE
+  FOREIGN KEY (platform_id) REFERENCES platforms(id) ON DELETE CASCADE,
+  FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
 );
 
 
@@ -24,7 +24,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-DROP TRIGGER IF EXISTS trg_files_set_updated_at ON files;
 CREATE TRIGGER trg_files_set_updated_at
 BEFORE UPDATE ON files
 FOR EACH ROW
