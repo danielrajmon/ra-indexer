@@ -49,6 +49,28 @@ function wasUpdatedInLast24Hours(updatedAt?: string | Date): boolean {
   return (Date.now() - updatedTimestamp) < UPSERT_COOLDOWN_MS;
 }
 
+function getGameChanges(existingGame: Game, incomingGame: Game): string[] {
+  const changes: string[] = [];
+
+  if (existingGame.title !== incomingGame.title) {
+    changes.push(`title: "${existingGame.title}" -> "${incomingGame.title}"`);
+  }
+
+  if (existingGame.numAchievements !== incomingGame.numAchievements) {
+    changes.push(`numAchievements: ${existingGame.numAchievements} -> ${incomingGame.numAchievements}`);
+  }
+
+  if (existingGame.numLeaderboards !== incomingGame.numLeaderboards) {
+    changes.push(`numLeaderboards: ${existingGame.numLeaderboards} -> ${incomingGame.numLeaderboards}`);
+  }
+
+  if (existingGame.points !== incomingGame.points) {
+    changes.push(`points: ${existingGame.points} -> ${incomingGame.points}`);
+  }
+
+  return changes;
+}
+
 async function upsertGame(platformId: number, game: Game): Promise<void> {
   const existingGame = await getGameById(game.id);
 
@@ -79,7 +101,9 @@ async function upsertGame(platformId: number, game: Game): Promise<void> {
     existingGame.numLeaderboards !== game.numLeaderboards ||
     existingGame.points !== game.points) {
 
-    console.log(`Game ${game.title} (ID: ${game.id}) has changed. Updating it.`);
+    const changedFields = getGameChanges(existingGame, game);
+
+    console.log(`Game ${game.title} (ID: ${game.id}) has changed. Updating it. Changes: ${changedFields.join(", ")}`);
     await updateGame(platformId, game);
   }
 
