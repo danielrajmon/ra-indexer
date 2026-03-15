@@ -4,7 +4,9 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-    "start": "npx ts-node src/index.ts"
+    "start": "npx ts-node src/index.ts",
+    "docker:build": "docker buildx build --platform linux/arm64 -t ra-indexer:arm64 --load .",
+    "docker:publish": "set -a && . ./.env && set +a && docker buildx build --pull --no-cache --provenance=false --sbom=false --platform linux/amd64 -t ${DOCKER_USERNAME}/ra-indexer:latest --push ."
   },
   "repository": {
     "type": "git",
