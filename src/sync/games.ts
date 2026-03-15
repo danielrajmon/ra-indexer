@@ -112,8 +112,26 @@ async function upsertGame(platformId: number, game: Game): Promise<void> {
   const apiHashes = game.hashes ?? [];
 
   if (haveDifferentHashes(dbHashes, apiHashes)) {
-    if ((existingGameFiles ?? []).some((file) => file.isOwned)) {
-      throw new Error(`Cannot refresh files for game ${game.id}: one or more files are owned.`);
+    const ownedFiles = (existingGameFiles ?? []).filter((file) => file.isOwned);
+
+    if (ownedFiles.length > 0) {
+      const normalizedDbHashes = dbHashes.map((hash) => hash.toLowerCase());
+      const normalizedApiHashes = apiHashes.map((hash) => hash.toLowerCase());
+      const dbHashSet = new Set(normalizedDbHashes);
+      const apiHashSet = new Set(normalizedApiHashes);
+
+      const addedHashes = normalizedApiHashes.filter((hash) => !dbHashSet.has(hash));
+      const removedHashes = normalizedDbHashes.filter((hash) => !apiHashSet.has(hash));
+      const ownedHashes = ownedFiles.map((file) => file.md5.toLowerCase());
+
+      console.warn(
+        `Cannot refresh files for game ${game.id} (${game.title}): one or more files are owned. ` +
+        `Differences: added=${JSON.stringify(addedHashes)}, ` +
+        `removed=${JSON.stringify(removedHashes)}, ` +
+        `owned=${JSON.stringify(ownedHashes)}`,
+      );
+
+      return;
     }
 
     const files = await getFilesForGame(game.id);
@@ -124,7 +142,6 @@ async function upsertGame(platformId: number, game: Game): Promise<void> {
       await replaceGameFiles(platformId, game.id, files, txQuery);
     });
   }
-
 }
 
 export async function processGames(): Promise<void> {
