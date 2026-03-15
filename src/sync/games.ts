@@ -125,13 +125,11 @@ async function upsertGame(platformId: number, game: Game): Promise<void> {
       const ownedHashes = ownedFiles.map((file) => file.md5.toLowerCase());
 
       console.warn(
-        `Cannot refresh files for game ${game.id} (${game.title}): one or more files are owned. ` +
+        `Warning: ${game.id} (${game.title}): one or more files are owned while hashes changed. ` +
         `Differences: added=${JSON.stringify(addedHashes)}, ` +
         `removed=${JSON.stringify(removedHashes)}, ` +
         `owned=${JSON.stringify(ownedHashes)}`,
       );
-
-      return;
     }
 
     const files = await getFilesForGame(game.id);
@@ -148,7 +146,7 @@ export async function processGames(): Promise<void> {
   const platforms = await getPlatforms();
 
   for (const platform of platforms) {
-    const gameList = await getGameListForPlatform(platform.id);
+    const gameList = await getGameListForPlatform(platform.id, platform.name);
 
     for (const game of gameList) {
       if (shouldSkipInsertForTitle(game.title)) {
