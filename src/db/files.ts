@@ -2,7 +2,7 @@ import { File } from "../types/file";
 import { query, QueryExecutor } from "./client";
 
 export async function getGameFiles(gameId: number): Promise<File[] | null> {
-  return query<File>('SELECT md5, name, labels, patch_url as "patchUrl", is_owned as "isOwned" FROM files WHERE game_id = $1', [gameId]);
+  return query<File>('SELECT md5, name, labels, patch_url as "patchUrl", is_required as "isRequired", is_owned as "isOwned" FROM files WHERE game_id = $1', [gameId]);
 }
 
 export async function insertGameFiles(platformId: number, gameId: number, files: File[], executeQuery: QueryExecutor = query): Promise<void> {
@@ -18,7 +18,14 @@ export async function insertGameFiles(platformId: number, gameId: number, files:
   }
 }
 
-export async function replaceGameFiles(platformId: number, gameId: number, files: File[], executeQuery: QueryExecutor = query): Promise<void> {
+export async function replaceGameFiles(
+  platformId: number,
+  gameId: number,
+  files: File[],
+  preservedRequiredHashes: string[] = [],
+  preservedOwnedHashes: string[] = [],
+  executeQuery: QueryExecutor = query,
+): Promise<void> {
   await executeQuery(`
     DELETE FROM files
      WHERE platform_id = $1
@@ -26,4 +33,28 @@ export async function replaceGameFiles(platformId: number, gameId: number, files
   `, [platformId, gameId]);
 
   await insertGameFiles(platformId, gameId, files, executeQuery);
+
+  const normalizedRequiredHashes = Array.from(new Set(preservedRequiredHashes.map((hash) => hash.toLowerCase())));
+
+  if (normalizedRequiredHashes.length > 0) {
+    await executeQuery(`
+      UPDATE files
+         SET is_required = TRUE
+       WHERE platform_id = $1
+         AND game_id = $2
+         AND md5 = ANY($3::varchar[])
+    `, [platformId, gameId, normalizedRequiredHashes]);
+  }
+
+  const normalizedOwnedHashes = Array.from(new Set(preservedOwnedHashes.map((hash) => hash.toLowerCase())));
+
+  if (normalizedOwnedHashes.length > 0) {
+    await executeQuery(`
+      UPDATE files
+         SET is_owned = TRUE
+       WHERE platform_id = $1
+         AND game_id = $2
+         AND md5 = ANY($3::varchar[])
+    `, [platformId, gameId, normalizedOwnedHashes]);
+  }
 }

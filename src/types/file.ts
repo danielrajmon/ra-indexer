@@ -3,5 +3,6 @@ export interface File {
   name: string;
   labels: string[];
   patchUrl: string;
+  isRequired?: boolean | null;
   isOwned?: boolean;
 }

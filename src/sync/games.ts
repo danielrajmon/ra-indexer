@@ -110,6 +110,12 @@ async function upsertGame(platformId: number, game: Game): Promise<void> {
   const existingGameFiles = await getGameFiles(game.id);
   const dbHashes = (existingGameFiles ?? []).map((file) => file.md5);
   const apiHashes = game.hashes ?? [];
+  const preservedRequiredHashes = (existingGameFiles ?? [])
+    .filter((file) => file.isRequired === true)
+    .map((file) => file.md5.toLowerCase());
+  const preservedOwnedHashes = (existingGameFiles ?? [])
+    .filter((file) => file.isOwned)
+    .map((file) => file.md5.toLowerCase());
 
   if (haveDifferentHashes(dbHashes, apiHashes)) {
     const ownedFiles = (existingGameFiles ?? []).filter((file) => file.isOwned);
@@ -137,7 +143,7 @@ async function upsertGame(platformId: number, game: Game): Promise<void> {
     console.log(`Game ${game.title} (ID: ${game.id}) hash list changed. Refreshing files.`);
     await withTransaction(async (txQuery) => {
       await updateGame(platformId, game, txQuery);
-      await replaceGameFiles(platformId, game.id, files, txQuery);
+      await replaceGameFiles(platformId, game.id, files, preservedRequiredHashes, preservedOwnedHashes, txQuery);
     });
   }
 }
