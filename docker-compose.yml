@@ -13,4 +13,4 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
       RA_USERNAME: "${RA_USERNAME:?RA_USERNAME is required}"
       RA_API_KEY: "${RA_API_KEY:?RA_API_KEY is required}"
-    restart: no
+    restart: "no"
